@@ -339,7 +339,8 @@ def download_weights():
 
     gdown.download(url, output, quiet=False)
 
-loaded = 0
+loaded = None
+approximator_0 = None
 
 def get_action(state, score):
     patterns = [
@@ -354,11 +355,11 @@ def get_action(state, score):
     ]
     
     global loaded
+    global approximator_0
     if(loaded is None):
         approximator_0 = NTupleApproximator(board_size=4, patterns=patterns)
-        weight_0_path = "weights_33000_7.pkl"
         download_weights()
-        load_weights(approximator_0, weight_0_path)
+        load_weights(approximator_0, "weights_33000_7.pkl")
         loaded = 1
     
     env = Game2048Env()
