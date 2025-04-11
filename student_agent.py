@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import copy
 import random
 import math
-from run_TD.py import NTupleApproximator
+from run_TD import NTupleApproximator
 
 class Game2048Env(gym.Env):
     def __init__(self):
