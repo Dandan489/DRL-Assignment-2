@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import copy
 import random
 import math
-
+from run_TD.py import NTupleApproximator
 
 class Game2048Env(gym.Env):
     def __init__(self):
@@ -231,10 +231,64 @@ class Game2048Env(gym.Env):
         # If the simulated board is different from the current board, the move is legal
         return not np.array_equal(self.board, temp_board)
 
+def load_weights(approx, path):
+    print(f"Loading {path}")
+    with open(path, "rb") as f:
+        approx.weights = pickle.load(f)
+
+def download_weights():
+    # "https://drive.google.com/file/d/1xK_UtG1hfDix0PaOmtRYC6T_AEIHBk-F/view?usp=drive_link"
+    import gdown
+
+    file_id = "1xK_UtG1hfDix0PaOmtRYC6T_AEIHBk-F"
+    url = f"https://drive.google.com/uc?id={file_id}"
+    output = "weights_33000_7.pkl"
+
+    gdown.download(url, output, quiet=False)
+
+loaded = 0
+
 def get_action(state, score):
-    env = Game2048Env()
-    return random.choice([0, 1, 2, 3]) # Choose a random action
+    patterns = [
+        [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)],
+        [(0, 1), (0, 2), (1, 1), (1, 2), (2, 1), (3, 1)],
+        [(0, 0), (0, 1), (0, 2), (0, 3), (1, 0), (1, 1)],
+        [(0, 0), (0, 1), (1, 1), (1, 2), (1, 3), (2, 2)],
+        [(0, 0), (0, 1), (0, 2), (1, 1), (2, 1), (2, 2)],
+        [(0, 0), (0, 1), (1, 1), (2, 1), (3, 1), (3, 2)],
+        [(0, 0), (0, 1), (1, 1), (2, 0), (2, 1), (3, 1)],
+        [(0, 0), (0, 1), (0, 2), (1, 0), (1, 2), (2, 2)]
+    ]
     
-    # You can submit this random agent to evaluate the performance of a purely random strategy.
+    global loaded
+    if(loaded is None):
+        approximator_0 = NTupleApproximator(board_size=4, patterns=patterns)
+        weight_0_path = "weights_33000_7.pkl"
+        download_weights()
+        load_weights(approximator_0, weight_0_path)
+        loaded = 1
+    
+    env = Game2048Env()
+    env.board = state.copy()
+    env.score = score
+    
+    legal_moves = [a for a in range(4) if env.is_move_legal(a)]
+
+    values = []
+    for action in legal_moves:
+        sim_env = copy.deepcopy(env)
+        if action == 0:
+            sim_env.move_up()
+        elif action == 1:
+            sim_env.move_down()
+        elif action == 2:
+            sim_env.move_left()
+        elif action == 3:
+            sim_env.move_right()
+        reward = sim_env.score - env.score
+        values.append(reward + approximator_0.value(sim_env.board))
+    best_action = legal_moves[np.argmax(values)]
+    
+    return best_action
 
 
