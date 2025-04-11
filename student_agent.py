@@ -329,16 +329,6 @@ def load_weights(approx, path):
     with open(path, "rb") as f:
         approx.weights = pickle.load(f)
 
-def download_weights():
-    # "https://drive.google.com/file/d/1xK_UtG1hfDix0PaOmtRYC6T_AEIHBk-F/view?usp=drive_link"
-    import gdown
-
-    file_id = "1xK_UtG1hfDix0PaOmtRYC6T_AEIHBk-F"
-    url = f"https://drive.google.com/uc?id={file_id}"
-    output = "weights_33000_7.pkl"
-
-    gdown.download(url, output, quiet=False)
-
 loaded = None
 approximator_0 = None
 
@@ -358,7 +348,6 @@ def get_action(state, score):
     global approximator_0
     if(loaded is None):
         approximator_0 = NTupleApproximator(board_size=4, patterns=patterns)
-        download_weights()
         load_weights(approximator_0, "weights_33000_7.pkl")
         loaded = 1
     

@@ -27,6 +27,7 @@ jobs:
       run: |
         pip install gym
         pip install -r requirements.txt
+        gdown 'https://drive.google.com/uc?id=1xK_UtG1hfDix0PaOmtRYC6T_AEIHBk-F&export=download'
 
     - name: 3. Ensure env.so is executable
       run: chmod +x env.cpython-38-x86_64-linux-gnu.so
