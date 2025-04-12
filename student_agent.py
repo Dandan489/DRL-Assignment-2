@@ -9,6 +9,7 @@ import copy
 import random
 import math
 from collections import defaultdict
+import json
 
 def rotate_90(positions):
     return [(y, 3 - x) for (x, y) in positions]
@@ -324,10 +325,19 @@ class Game2048Env(gym.Env):
         # If the simulated board is different from the current board, the move is legal
         return not np.array_equal(self.board, temp_board)
 
+# def load_weights(approx, path):
+#     print(f"Loading {path}")
+#     with open(path, "rb") as f:
+#         approx.weights = pickle.load(f)
+
 def load_weights(approx, path):
-    print(f"Loading {path}")
-    with open(path, "rb") as f:
-        approx.weights = pickle.load(f)
+    with open(path, "r") as f:
+        raw = json.load(f)
+    weights = [
+        defaultdict(float, {tuple(map(int, k.split(","))): v for k, v in d.items()})
+        for d in raw
+    ]
+    approx.weights = weights
 
 loaded = None
 approximator_0 = None
@@ -348,7 +358,7 @@ def get_action(state, score):
     global approximator_0
     if(loaded is None):
         approximator_0 = NTupleApproximator(board_size=4, patterns=patterns)
-        load_weights(approximator_0, "weights_33000_7.pkl")
+        load_weights(approximator_0, "weights.json")
         loaded = 1
     
     env = Game2048Env()
